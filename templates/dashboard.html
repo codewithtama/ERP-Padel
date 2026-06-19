@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% block title %}Dashboard · DIKA ERP{% endblock %}
 {% block content %}
 <header class="page-header">
@@ -12,7 +13,7 @@
   <div class="kpi-grid">
     <article class="kpi kpi-dark">
       <div class="kpi-label">Revenue (bulan ini)</div>
-      <div class="kpi-value">Rp {{ snapshot.revenue|default:0|floatformat:0|cut:"." }}</div>
+      <div class="kpi-value">Rp {{ snapshot.revenue|default:0|intcomma }}</div>
       <div class="kpi-sub accent">auto from bookings</div>
     </article>
     <article class="kpi">
@@ -22,12 +23,12 @@
     </article>
     <article class="kpi {% if snapshot.netPosition < 0 %}danger{% endif %}">
       <div class="kpi-label">Net position (live)</div>
-      <div class="kpi-value">Rp {{ snapshot.netPosition|default:0|floatformat:0|cut:"." }}</div>
+      <div class="kpi-value">Rp {{ snapshot.netPosition|default:0|intcomma }}</div>
       <div class="kpi-sub">not frozen</div>
     </article>
     <article class="kpi">
       <div class="kpi-label">Payroll (bulan ini)</div>
-      <div class="kpi-value">Rp {{ snapshot.payroll|default:0|floatformat:0|cut:"." }}</div>
+      <div class="kpi-value">Rp {{ snapshot.payroll|default:0|intcomma }}</div>
       <div class="kpi-sub">from attendance</div>
     </article>
   </div>
@@ -59,8 +60,8 @@
     <aside class="insight">
       <div class="insight-mark">✦</div>
       <div>
-        <div class="insight-title">DIKA AI</div>
-        <div class="insight-copy">Tennis {{ snapshot.tennisOcc }}% vs Padel {{ snapshot.padelOcc }}%. Arahkan regular Padel off-peak ke Indoor Private untuk menaikkan net.</div>
+        <div class="insight-title">Occupancy insight</div>
+        <div class="insight-copy">Tennis {{ snapshot.tennisOcc }}% &middot; Padel {{ snapshot.padelOcc }}% &middot; Keseluruhan {{ snapshot.overallOcc }}%.</div>
       </div>
     </aside>
   </div>

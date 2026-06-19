@@ -7,7 +7,7 @@ def is_admin_user(user) -> bool:
     return bool(user and user.is_authenticated and (user.is_staff or user.is_superuser))
 
 def is_staff_user(user) -> bool:
-    # Staff biasa: login tapi bukan admin/superuser
+    # Staff biasa: login tapi bukan admin/superuser (halaman operasional non-admin)
     return bool(user and user.is_authenticated and not is_admin_user(user))
 
 def is_management_user(user) -> bool:
@@ -26,7 +26,7 @@ def role_required(check):
     return decorator
 
 admin_required = role_required(is_admin_user)
-staff_required = role_required(is_staff_user)
+staff_required = role_required(lambda u: is_staff_user(u) or is_admin_user(u))
 management_required = role_required(is_management_user)
 
 def redirect_home_for_user(user):

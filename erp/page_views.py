@@ -52,7 +52,7 @@ def login_page(request):
         else:
             login(request, user)
             return redirect_home_for_user(user)
-    return render(request, "login.html", {"error": error})
+    return render(request, "login.html", {"error": error, "logged_out": request.GET.get("logged_out")})
 
 
 def logout_page(request):
@@ -222,42 +222,35 @@ def cancel_booking_page(request, booking_id):
 @staff_required
 def attendance_page(request):
     current_employee = _employee_for_user(request.user)
-    if current_employee is None:
-        messages.error(request, "Akun Anda belum terhubung ke data employee. Hubungi admin.")
     
     today = date.today()
-    action_type = "masuk"  # Default pilihan pertama
+    action_type = "masuk"
     already_all_done = False
+    no_employee = current_employee is None
 
     if current_employee:
-        # Cek apa saja absensi yang sudah terisi hari ini
         has_in = Attendance.objects.filter(employee=current_employee, work_date=today, source="masuk").exists()
         has_out = Attendance.objects.filter(employee=current_employee, work_date=today, source="keluar").exists()
-        
         if has_in and has_out:
-            already_all_done = True  # Sudah absen masuk & keluar
+            already_all_done = True
         elif has_in:
-            action_type = "keluar"   # Sudah masuk, sekarang waktunya absen keluar
+            action_type = "keluar"
 
-    # 2. Inisialisasi Form dengan membawa tipe aksi saat ini
     form = AttendanceForm(
-        request.POST or None, 
-        request.FILES or None, 
-        current_employee=current_employee, 
-        action_type=action_type
+        request.POST or None,
+        request.FILES or None,
+        current_employee=current_employee,
+        action_type=action_type,
     )
-    
-    if request.method == "POST" and not already_all_done:
-        if current_employee and form.is_valid():
+
+    if request.method == "POST" and not already_all_done and not no_employee:
+        if form.is_valid():
             attendance = form.save(commit=False)
             attendance.employee = current_employee
             attendance.work_date = today
             attendance.created_by = request.user
             attendance.present = True
-            
-            # Paksa simpan tipe absensi berdasarkan kondisi sistem (masuk / keluar)
-            attendance.source = action_type 
-            
+            attendance.source = action_type
             attendance.save()
             messages.success(request, f"Absensi {action_type} berhasil disimpan.")
             return redirect("attendance")
@@ -293,27 +286,21 @@ def attendance_page(request):
             "action_type": action_type,
             "already_all_done": already_all_done,
             "current_employee": current_employee,
+            "no_employee": no_employee,
         },
     )
 
 @staff_required
 def sickleave_page(request):
     current_employee = _employee_for_user(request.user)
-    if current_employee is None:
-        messages.error(request, "Akun Anda belum terhubung ke data employee. Hubungi admin.")
+    no_employee = current_employee is None
     
-    # Masukkan request.FILES untuk menangkap file gambar
     form = SickLeaveForm(request.POST or None, request.FILES or None, current_employee=current_employee)
     
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST" and form.is_valid() and not no_employee:
         leave = form.save(commit=False)
         leave.requested_by = request.user
-        
-        if current_employee is None:
-            return redirect("sickleave")
-
         leave.employee = current_employee
-            
         leave.status = "pending"
         leave.save()
         messages.success(request, "Pengajuan sick leave terkirim dan menunggu approval admin.")
@@ -324,7 +311,7 @@ def sickleave_page(request):
         .select_related("employee", "approved_by")
         .order_by("-leave_date")
     )
-    return render(request, "sickleave.html", {"form": form, "sick_leaves": sick_leaves})
+    return render(request, "sickleave.html", {"form": form, "sick_leaves": sick_leaves, "no_employee": no_employee})
 
 
 @admin_required
@@ -435,14 +422,18 @@ def revenue_page(request):
         .order_by("period")
     )
     
+    grand_tennis = 0
+    grand_padel = 0
+    grand_total = 0
     summary = []
     for row in summary_rows:
-        summary.append({
-            "period": row["period"], 
-            "tennis": row["tennis"] or 0, 
-            "padel": row["padel"] or 0, 
-            "total": row["total"] or 0
-        })
+        tennis = row["tennis"] or 0
+        padel = row["padel"] or 0
+        total = row["total"] or 0
+        summary.append({"period": row["period"], "tennis": tennis, "padel": padel, "total": total})
+        grand_tennis += tennis
+        grand_padel += padel
+        grand_total += total
 
     return render(
         request,
@@ -451,11 +442,14 @@ def revenue_page(request):
             "form": form,
             "records": records,
             "summary": summary,
-            "total_tennis": total_tennis,      # Nilainya otomatis ter-filter bulan ini saja
-            "total_padel": total_padel,        # Nilainya otomatis ter-filter bulan ini saja
-            "total_all": total_all,            # Nilainya otomatis ter-filter bulan ini saja
+            "total_tennis": total_tennis,
+            "total_padel": total_padel,
+            "total_all": total_all,
+            "grand_tennis": grand_tennis,
+            "grand_padel": grand_padel,
+            "grand_total": grand_total,
             "editing": instance,
-            "selected_date": selected_date,    # Kirim ke HTML agar input date-picker bisa sinkron
+            "selected_date": selected_date,
         },
     )
 

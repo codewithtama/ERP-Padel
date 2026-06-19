@@ -44,9 +44,11 @@
       </span>
     </div>
     
-    {% if already_all_done %}
+    {% if no_employee %}
+      <div class="notice error">Akun Anda belum terhubung ke data employee. Hubungi admin.</div>
+    {% elif already_all_done %}
       <div class="done-box">
-         🎉 Anda sudah melakukan Absen Masuk dan Absen Keluar untuk hari ini. Terima kasih!
+        Anda sudah melakukan Absen Masuk dan Absen Keluar untuk hari ini. Terima kasih!
       </div>
     {% else %}
       <form method="post" class="form-grid" enctype="multipart/form-data">

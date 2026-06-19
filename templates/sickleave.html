@@ -27,11 +27,15 @@
       <span>staff only</span>
     </div>
     
+    {% if no_employee %}
+      <div class="notice error">Akun Anda belum terhubung ke data employee. Hubungi admin.</div>
+    {% else %}
     <form method="post" class="form-grid" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.as_p }}
       <button type="submit" class="primary-btn">Submit request</button>
     </form>
+    {% endif %}
   </article>
 
   <article class="card">
