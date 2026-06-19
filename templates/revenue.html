@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %} {% block title %}Revenue · DIKA ERP{% endblock %}
+{% load rupiah_extras %} {% block title %}Revenue · DIKA ERP{% endblock %}
 {% block content %}
 <header class="page-header">
   <div>
@@ -14,16 +14,16 @@
   <div class="kpi-grid three">
     <article class="kpi kpi-dark">
       <div class="kpi-label">Revenue (bulan ini)</div>
-      <div class="kpi-value">Rp {{ total_all|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ total_all|default:0|rupiah_full }}</div>
       <div class="kpi-sub accent">manual records, grouped by month</div>
     </article>
     <article class="kpi">
       <div class="kpi-label">Tennis total</div>
-      <div class="kpi-value">Rp {{ total_tennis|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ total_tennis|default:0|rupiah_full }}</div>
     </article>
     <article class="kpi">
       <div class="kpi-label">Padel total</div>
-      <div class="kpi-value">Rp {{ total_padel|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ total_padel|default:0|rupiah_full }}</div>
     </article>
   </div>
 
@@ -58,18 +58,18 @@
         {% for row in summary %}
           <div class="table-row revenue-row">
             <div>{{ row.period|date:"F Y" }}</div>
-            <div class="right tabular">Rp {{ row.tennis|intcomma }}</div>
-            <div class="right tabular">Rp {{ row.padel|intcomma }}</div>
-            <div class="right tabular"><strong>Rp {{ row.total|intcomma }}</strong></div>
+            <div class="right tabular">{{ row.tennis|rupiah_full }}</div>
+            <div class="right tabular">{{ row.padel|rupiah_full }}</div>
+            <div class="right tabular"><strong>{{ row.total|rupiah_full }}</strong></div>
           </div>
         {% empty %}
           <div class="muted" style="padding: 14px;">Belum ada revenue record.</div>
         {% endfor %}
         <div class="table-row revenue-row revenue-total">
           <div><strong>GRAND TOTAL ({{ summary|length }} bln)</strong></div>
-          <div class="right tabular"><strong>Rp {{ grand_tennis|intcomma }}</strong></div>
-          <div class="right tabular"><strong>Rp {{ grand_padel|intcomma }}</strong></div>
-          <div class="right tabular"><strong>Rp {{ grand_total|intcomma }}</strong></div>
+          <div class="right tabular"><strong>{{ grand_tennis|rupiah_full }}</strong></div>
+          <div class="right tabular"><strong>{{ grand_padel|rupiah_full }}</strong></div>
+          <div class="right tabular"><strong>{{ grand_total|rupiah_full }}</strong></div>
         </div>
       </div>
     </article>
@@ -88,7 +88,7 @@
             <div class="muted">{{ record.note|default:"-" }}{% if record.created_by %} · by {{ record.created_by.username }}{% endif %}</div>
           </div>
           <div class="revenue-actions">
-            <div class="tabular">Rp {{ record.amount|intcomma }}</div>
+            <div class="tabular">{{ record.amount|rupiah_full }}</div>
             <a class="inline-link" href="/revenue/?edit={{ record.id }}">Edit</a>
             <form method="post" action="/revenue/{{ record.id }}/delete/" onsubmit="return confirm('Delete record?')">
               {% csrf_token %}

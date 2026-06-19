@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load rupiah_extras %}
 {% block title %}Payroll · DIKA ERP{% endblock %}
 {% block content %}
 <header class="page-header">
@@ -13,7 +13,7 @@
   <div class="kpi-grid three">
     <article class="kpi kpi-dark">
       <div class="kpi-label">Total payroll</div>
-      <div class="kpi-value">Rp {{ run.total_amount|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ run.total_amount|default:0|rupiah_full }}</div>
     </article>
     <article class="kpi">
       <div class="kpi-label">Headcount</div>
@@ -40,16 +40,16 @@
             <strong>{{ line.line.employee.full_name }}</strong>
             <div class="muted">{{ line.line.employee.division }}</div>
           </div>
-          <div class="right tabular">Rp {{ line.line.base_salary|intcomma }}</div>
+          <div class="right tabular">{{ line.line.base_salary|rupiah_full }}</div>
           <div class="center tabular">{{ line.line.days_worked }}</div>
-          <div class="right tabular">Rp {{ line.deduction|intcomma }}</div>
-          <div class="right tabular"><strong>Rp {{ line.line.net_pay|intcomma }}</strong></div>
+          <div class="right tabular">{{ line.deduction|rupiah_full }}</div>
+          <div class="right tabular"><strong>{{ line.line.net_pay|rupiah_full }}</strong></div>
         </div>
       {% empty %}
         <div class="muted">Belum ada payroll run.</div>
       {% endfor %}
     </div>
-    <div class="muted table-foot">Total deductions: Rp {{ total_deduction|intcomma }}</div>
+    <div class="muted table-foot">Total deductions: {{ total_deduction|rupiah_full }}</div>
   </article>
 </section>
 {% endblock %}

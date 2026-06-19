@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load rupiah_extras %}
 {% block title %}Dashboard · DIKA ERP{% endblock %}
 {% block content %}
 <header class="page-header">
@@ -13,7 +13,7 @@
   <div class="kpi-grid">
     <article class="kpi kpi-dark">
       <div class="kpi-label">Revenue (bulan ini)</div>
-      <div class="kpi-value">Rp {{ snapshot.revenue|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ snapshot.revenue|default:0|rupiah_full }}</div>
       <div class="kpi-sub accent">auto from bookings</div>
     </article>
     <article class="kpi">
@@ -23,12 +23,12 @@
     </article>
     <article class="kpi {% if snapshot.netPosition < 0 %}danger{% endif %}">
       <div class="kpi-label">Net position (live)</div>
-      <div class="kpi-value">Rp {{ snapshot.netPosition|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ snapshot.netPosition|default:0|rupiah_full }}</div>
       <div class="kpi-sub">not frozen</div>
     </article>
     <article class="kpi">
       <div class="kpi-label">Payroll (bulan ini)</div>
-      <div class="kpi-value">Rp {{ snapshot.payroll|default:0|intcomma }}</div>
+      <div class="kpi-value">{{ snapshot.payroll|default:0|rupiah_full }}</div>
       <div class="kpi-sub">from attendance</div>
     </article>
   </div>

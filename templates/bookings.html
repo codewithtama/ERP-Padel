@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load rupiah_extras %}
 
 {% block title %}Bookings · DIKA ERP{% endblock %}
 {% block content %}
@@ -164,7 +164,7 @@
                 {% endif %}
               </div>
             </div>
-            <div class="tabular">Rp {{ booking.amount|default:0|intcomma }}</div>
+            <div class="tabular">{{ booking.amount|default:0|rupiah_full }}</div>
           </div>
         {% endfor %}
       </div>
