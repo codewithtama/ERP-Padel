@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Cancel Booking · DIKA ERP{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Cancel Booking Confirmation</h1>
+    <p>Tindakan ini akan menghapus jadwal grid dan data keuangan revenue record.</p>
+  </div>
+</header>
+
+<section class="content-stack" style="max-width: 600px; margin: 0 auto;">
+  <article class="card" style="border: 1px solid #fca5a5; background-color: #fff5f5;">
+    <div class="card-head" style="color: #991b1b;">
+      <b>⚠️ Peringatan Pembatalan</b>
+      <span>admin only</span>
+    </div>
+    
+    <div style="padding: 15px; color: #7f1d1d; line-height: 1.6;">
+      Apakah Anda yakin ingin membatalkan pesanan lapangan berikut?
+      <ul style="margin-top: 10px; font-weight: 600;">
+        <li>Nama Customer: {{ booking.note }}</li>
+        <li>Lapangan: {{ booking.court.name }}</li>
+        <li>Tanggal Main: {{ booking.booking_date }}</li>
+      </ul>
+    </div>
+
+    <form method="post" style="padding: 15px; display: flex; gap: 10px;">
+      {% csrf_token %}
+      <button type="submit" class="primary-btn" style="background-color: #dc2626;">Ya, Batalkan Pesanan</button>
+      <a href="/bookings/?date={{ booking.booking_date|date:'Y-m-d' }}" class="primary-btn" style="background-color: #64748b; text-decoration: none; text-align: center;">Kembali</a>
+    </form>
+  </article>
+</section>
+{% endblock %}

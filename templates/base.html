@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}DIKA ERP{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div>
+          <div class="brand-title">DIKA ERP</div>
+          <div class="brand-subtitle">KSC Racquet Club</div>
+        </div>
+      </div>
+      <nav class="nav">
+        {% if user.is_authenticated %}
+          
+          {% if user.is_staff or user.is_superuser %}
+            <a href="/dashboard/" class="{% if '/dashboard/' in request.path or request.path == '/' %}active{% endif %}">Dashboard</a>
+            <a href="/bookings/" class="{% if '/bookings/' in request.path %}active{% endif %}">Booking calendar</a>
+            <a href="/revenue/" class="{% if '/revenue/' in request.path %}active{% endif %}">Revenue</a>
+            <a href="/attendance/" class="{% if '/attendance/' in request.path %}active{% endif %}">Attendance</a>
+            <a href="/payroll/" class="{% if '/payroll/' in request.path %}active{% endif %}">Payroll</a>
+            
+          {% else %}
+            <a href="/bookings/" class="{% if '/bookings/' in request.path %}active{% endif %}">Booking calendar</a>
+            <a href="/attendance/" class="{% if '/attendance/' in request.path %}active{% endif %}">Attendance</a>
+            <a href="/sickleave/" class="{% if '/sickleave/' in request.path %}active{% endif %}">Sick leave</a>
+          {% endif %}
+
+        {% endif %}
+      </nav>
+    </aside>
+    <main class="main-area">
+      {% if user.is_authenticated %}
+      <div class="topbar">
+        <div class="topbar-user">{{ user.username }}</div>
+        <a class="topbar-logout" href="/logout/">Logout</a>
+      </div>
+      {% endif %}
+      {% if messages %}
+      <div class="message-stack">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

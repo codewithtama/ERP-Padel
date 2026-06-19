@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Sick leave · DIKA ERP{% endblock %}
+{% block content %}
+<style>
+  /* Styling abu-abu untuk field employee yang terkunci */
+  .form-grid select:disabled,
+  .form-grid input:disabled {
+      background-color: #f1f5f9 !important;
+      color: #94a3b8 !important;
+      border-color: #e2e8f0 !important;
+      cursor: not-allowed !important;
+      opacity: 0.7;
+  }
+</style>
+
+<header class="page-header">
+  <div>
+    <h1>Sick leave</h1>
+    <p>Pending approval by admin</p>
+  </div>
+</header>
+
+<section class="content-stack">
+  <article class="card">
+    <div class="card-head">
+      <b>Create sick leave</b>
+      <span>staff only</span>
+    </div>
+    
+    <form method="post" class="form-grid" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="primary-btn">Submit request</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <div class="card-head">
+      <b>My requests</b>
+      <span>pending / approved / rejected</span>
+    </div>
+    <div class="list">
+      {% for leave in sick_leaves %}
+        <div class="list-row">
+          <div>
+            <strong>{{ leave.employee.full_name }}</strong>
+            <div class="muted">{{ leave.leave_date }} · {{ leave.reason|truncatechars:80 }}</div>
+          </div>
+          <div class="tabular">
+            <span class="badge status-{{ leave.status }}">{{ leave.status|upper }}</span>
+          </div>
+        </div>
+      {% empty %}
+        <div class="muted">Belum ada pengajuan sick leave.</div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

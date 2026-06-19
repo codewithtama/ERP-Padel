@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard · DIKA ERP{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Executive dashboard</h1>
+    <p>KSC Racquet Club · live</p>
+  </div>
+</header>
+
+<section class="content-stack">
+  <div class="kpi-grid">
+    <article class="kpi kpi-dark">
+      <div class="kpi-label">Revenue (bulan ini)</div>
+      <div class="kpi-value">Rp {{ snapshot.revenue|default:0|floatformat:0|cut:"." }}</div>
+      <div class="kpi-sub accent">auto from bookings</div>
+    </article>
+    <article class="kpi">
+      <div class="kpi-label">Occupancy (hari ini)</div>
+      <div class="kpi-value">{{ snapshot.overallOcc }}%</div>
+      <div class="kpi-sub">112 court-hrs base</div>
+    </article>
+    <article class="kpi {% if snapshot.netPosition < 0 %}danger{% endif %}">
+      <div class="kpi-label">Net position (live)</div>
+      <div class="kpi-value">Rp {{ snapshot.netPosition|default:0|floatformat:0|cut:"." }}</div>
+      <div class="kpi-sub">not frozen</div>
+    </article>
+    <article class="kpi">
+      <div class="kpi-label">Payroll (bulan ini)</div>
+      <div class="kpi-value">Rp {{ snapshot.payroll|default:0|floatformat:0|cut:"." }}</div>
+      <div class="kpi-sub">from attendance</div>
+    </article>
+  </div>
+
+  <div class="two-col">
+    <article class="card">
+      <div class="card-head">
+        <b>Court occupancy — hari ini</b>
+        <span>Padel <strong>{{ snapshot.padelOcc }}%</strong> · Tennis <strong>{{ snapshot.tennisOcc }}%</strong></span>
+      </div>
+      <div class="bars">
+        {% if snapshot.courts|length == 0 %}
+          <p class="muted">Belum ada booking hari ini. Buat di Booking calendar.</p>
+        {% endif %}
+        {% for court in snapshot.courts %}
+          <div class="bar-row">
+            <div class="bar-row-head">
+              <span>{{ court.court__name }}</span>
+              <strong>{{ court.booked_hours|default:0 }} hrs</strong>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width: {% widthratio court.booked_hours 16 100 %}%"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </article>
+
+    <aside class="insight">
+      <div class="insight-mark">✦</div>
+      <div>
+        <div class="insight-title">DIKA AI</div>
+        <div class="insight-copy">Tennis {{ snapshot.tennisOcc }}% vs Padel {{ snapshot.padelOcc }}%. Arahkan regular Padel off-peak ke Indoor Private untuk menaikkan net.</div>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

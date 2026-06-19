@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load humanize %} {% block title %}Revenue · DIKA ERP{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Revenue dashboard</h1>
+    <form method="get" action="" style="display: inline-flex; gap: 8px; align-items: center;">
+      <input type="month" name="date" value="{{ selected_date|date:'Y-m' }}" onchange="this.form.submit()" class="form-control">
+    </form>
+  </div>
+</header>
+
+<section class="content-stack">
+  <div class="kpi-grid three">
+    <article class="kpi kpi-dark">
+      <div class="kpi-label">Revenue (bulan ini)</div>
+      <div class="kpi-value">Rp {{ total_all|default:0|intcomma }}</div>
+      <div class="kpi-sub accent">manual records, grouped by month</div>
+    </article>
+    <article class="kpi">
+      <div class="kpi-label">Tennis total</div>
+      <div class="kpi-value">Rp {{ total_tennis|default:0|intcomma }}</div>
+    </article>
+    <article class="kpi">
+      <div class="kpi-label">Padel total</div>
+      <div class="kpi-value">Rp {{ total_padel|default:0|intcomma }}</div>
+    </article>
+  </div>
+
+  <div class="two-col">
+    <article class="card">
+      <div class="card-head">
+        <b>{% if editing %}Edit revenue record{% else %}Add revenue record{% endif %}</b>
+        <span>only admin can create / update / delete</span>
+      </div>
+      <form method="post" class="form-grid">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="primary-btn">{% if editing %}Update record{% else %}Save record{% endif %}</button>
+      </form>
+      {% if editing %}
+        <div class="notice success">Editing record for {{ editing.revenue_date }}.</div>
+      {% endif %}
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <b>Quick summary</b>
+        <span>tennis / padel / total</span>
+      </div>
+      <div class="table">
+        <div class="table-head revenue-head">
+          <div>Bulan</div>
+          <div class="right">Tennis</div>
+          <div class="right">Padel</div>
+          <div class="right">Total</div>
+        </div>
+        {% for row in summary %}
+          <div class="table-row revenue-row">
+            <div>{{ row.period|date:"F Y" }}</div>
+            <div class="right tabular">Rp {{ row.tennis|intcomma }}</div>
+            <div class="right tabular">Rp {{ row.padel|intcomma }}</div>
+            <div class="right tabular"><strong>Rp {{ row.total|intcomma }}</strong></div>
+          </div>
+        {% empty %}
+          <div class="muted" style="padding: 14px;">Belum ada revenue record.</div>
+        {% endfor %}
+        <div class="table-row revenue-row revenue-total">
+          <div><strong>TOTAL ({{ summary|length }} bln)</strong></div>
+          <div class="right tabular"><strong>Rp {{ total_tennis|intcomma }}</strong></div>
+          <div class="right tabular"><strong>Rp {{ total_padel|intcomma }}</strong></div>
+          <div class="right tabular"><strong>Rp {{ total_all|intcomma }}</strong></div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <article class="card">
+    <div class="card-head">
+      <b>Records</b>
+      <span>latest first</span>
+    </div>
+    <div class="list">
+      {% for record in records %}
+        <div class="list-row">
+          <div>
+            <strong>{{ record.revenue_date }} · {{ record.get_sport_display }}</strong>
+            <div class="muted">{{ record.note|default:"-" }}{% if record.created_by %} · by {{ record.created_by.username }}{% endif %}</div>
+          </div>
+          <div class="revenue-actions">
+            <div class="tabular">Rp {{ record.amount|intcomma }}</div>
+            <a class="inline-link" href="/revenue/?edit={{ record.id }}">Edit</a>
+            <form method="post" action="/revenue/{{ record.id }}/delete/" onsubmit="return confirm('Delete record?')">
+              {% csrf_token %}
+              <button type="submit" class="inline-link danger-link">Delete</button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="muted">Belum ada record.</div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

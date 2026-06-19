@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · DIKA ERP</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <div class="login-screen">
+    <section class="login-hero">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div>
+          <div class="brand-title light">DIKA Consulting ERP</div>
+          <div class="brand-subtitle muted">KSC Racquet Club</div>
+        </div>
+      </div>
+      <div class="hero-copy">
+        <h1>One platform.<br>One source of truth.</h1>
+        <p>Bookings, occupancy, attendance, payroll, and live P&amp;L for KSC operations.</p>
+      </div>
+      <div class="hero-foot">Kedoya, Jakarta Barat</div>
+    </section>
+    <section class="login-panel">
+      <div class="login-card">
+        <h2>Sign in</h2>
+        <p>Use your staff account.</p>
+        {% if logged_out %}
+          <div class="notice success">You are logged out.</div>
+        {% endif %}
+        {% if error %}
+          <div class="notice error">{{ error }}</div>
+        {% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <label>Username</label>
+          <input type="text" name="username" placeholder="admin / staff">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="********">
+          <button type="submit">Sign in</button>
+        </form>
+        <div class="login-note">Forgot your password? Contact your supervisor.</div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

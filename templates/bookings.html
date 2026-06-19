@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Bookings · DIKA ERP{% endblock %}
+{% block content %}
+<style>
+#id_selected_hours {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+    margin-top: 10px;
+}
+#id_selected_hours li, #id_selected_hours label {
+    position: relative;
+    display: block;
+    text-align: center;
+    user-select: none;
+}
+#id_selected_hours input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+#id_selected_hours label {
+    display: block;
+    background-color: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 11pt;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+#id_selected_hours label:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}
+#id_selected_hours li:has(input[type="checkbox"]:checked) label,
+#id_selected_hours label:has(input[type="checkbox"]:checked) {
+    background-color: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+}
+#id_selected_hours li:has(input[type="checkbox"]:disabled) label,
+#id_selected_hours label:has(input[type="checkbox"]:disabled) {
+    background-color: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    text-decoration: line-through !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+.action-link {
+    font-size: 0.85em;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 6px;
+}
+.action-link:hover { text-decoration: underline; }
+</style>
+
+<header class="page-header">
+  <div>
+    <h1>Booking calendar</h1>
+    <form method="get" action="" style="display: inline-flex; gap: 8px; align-items: center;">
+      <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+    </form>
+  </div>
+</header>
+
+<section class="content-stack">
+  
+  <article class="card">
+    <div class="card-head">
+      <b>Quick booking grid</b>
+      <span>server-priced, anti double-booking</span>
+    </div>
+    <div class="table-wrap">
+      <div class="booking-grid booking-head" style="grid-template-columns: 72px repeat({{ courts|length }}, minmax(130px, 1fr));">
+        <div>Jam</div>
+        {% for court in courts %}
+          <div>{{ court.name }}</div>
+        {% endfor %}
+      </div>
+      {% for row in rows %}
+        <div class="booking-grid booking-row" style="grid-template-columns: 72px repeat({{ courts|length }}, minmax(130px, 1fr));">
+          <div class="booking-hour">{{ row.hour }}:00</div>
+          {% for cell in row.cells %}
+            {% if cell.booking %}
+              <div class="booking-cell booked" style="background-color: #f8fafc; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                booked ({{ cell.booking.note|default:"-" }})
+                <a href="?date={{ selected_date|date:'Y-m-d' }}&edit_id={{ cell.booking.id }}#booking-form-section" class="action-link" style="color: #0284c7;" title="Edit Booking">✏️</a>
+                
+                {% if user_is_admin %}
+                  <a href="{% url 'cancel_booking' cell.booking.id %}" class="action-link" style="color: #ef4444; margin-left: 2px;" title="Cancel Booking">❌</a>
+                {% endif %}
+              </div>
+            {% else %}
+              <div class="booking-cell empty">kosong</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <div class="two-col">
+    
+    <article class="card" id="booking-form-section" style="scroll-margin-top: 30px;">
+      <div class="card-head">
+        <b>{% if booking_instance %}Edit booking: {{ booking_instance.note }}{% else %}Add new booking{% endif %}</b>
+        <span>Tanggal: {{ selected_date }}</span>
+      </div>
+      <form method="post" class="form-grid">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <div style="margin-top: 15px; display: inline-flex; gap: 8px;">
+          <button type="submit" class="primary-btn">
+            {% if booking_instance %}Simpan Perubahan{% else %}Save booking{% endif %}
+          </button>
+          {% if booking_instance %}
+            <a href="?date={{ selected_date|date:'Y-m-d' }}" class="primary-btn" style="background-color:#64748b;">Batal</a>
+          {% endif %}
+        </div>
+      </form>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <b>Bookings hari ini</b>
+        <span>{{ bookings|length }} item</span>
+      </div>
+      <div class="list">
+        {% for booking in bookings %}
+          <div class="list-row">
+            <div>
+              <strong>{{ booking.court.name }}</strong>
+              <div class="customer-name" style="color: #0f172a; font-weight: 600; margin: 2px 0;">
+                Cust: {{ booking.note|default:"Tanpa Nama" }}
+              </div>
+              <div class="muted">
+                Jam: 
+                {% for h in booking.get_hours_list %}
+                  {{ h|stringformat:"02d" }}:00{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                  Tidak ada jam terpilih
+                {% endfor %}
+                · <span class="badge">{{ booking.get_kind_display }}</span>
+              </div>
+              <div class="small muted" style="margin-top: 4px;">
+                by {{ booking.created_by.full_name|default:"System" }}
+                
+                <a href="?date={{ selected_date|date:'Y-m-d' }}&edit_id={{ booking.id }}#booking-form-section" class="action-link" style="color: #0284c7;">Edit</a>
+                
+                {% if user_is_admin %}
+                  <a href="{% url 'cancel_booking' booking.id %}" class="action-link" style="color: #ef4444;">Cancel</a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="tabular">Rp {{ booking.amount|default:0|intcomma }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dateInput = document.getElementById("id_booking_date");
+    const courtSelect = document.getElementById("id_court");
+    const checkboxContainer = document.getElementById("id_selected_hours");
+
+    function updateDisabledHours() {
+        const selectedDate = dateInput.value;
+        const selectedCourt = courtSelect.value;
+
+        if (!selectedDate || !selectedCourt || !checkboxContainer) return;
+
+        const checkboxes = checkboxContainer.querySelectorAll('input[type="checkbox"]');
+
+        fetch(`/api/v1/bookings/check-hours/?date=${selectedDate}&court_id=${selectedCourt}`)
+            .then(response => response.json())
+            .then(data => {
+                const bookedHours = data.booked_hours;
+                const currentEditId = new URLSearchParams(window.location.search).get('edit_id');
+
+                checkboxes.forEach(checkbox => {
+                    const hourValue = parseInt(checkbox.value);
+                    if (bookedHours.includes(hourValue) && !currentEditId) {
+                        checkbox.disabled = true;
+                        checkbox.checked = false; 
+                    } else {
+                        checkbox.disabled = false;
+                    }
+                });
+            })
+            .catch(error => console.error("Error fetching booked hours:", error));
+    }
+
+    if (dateInput && courtSelect) {
+        dateInput.addEventListener("change", updateDisabledHours);
+        courtSelect.addEventListener("change", updateDisabledHours);
+        updateDisabledHours();
+    }
+});
+</script>
+{% endblock %}

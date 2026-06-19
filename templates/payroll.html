@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Payroll · DIKA ERP{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Payroll</h1>
+    <p>{{ month|date:'Y-m' }}</p>
+  </div>
+</header>
+
+<section class="content-stack">
+  <div class="kpi-grid three">
+    <article class="kpi kpi-dark">
+      <div class="kpi-label">Total payroll</div>
+      <div class="kpi-value">Rp {{ run.total_amount|default:0 }}</div>
+    </article>
+    <article class="kpi">
+      <div class="kpi-label">Headcount</div>
+      <div class="kpi-value">{{ lines|length }}</div>
+    </article>
+    <article class="kpi">
+      <div class="kpi-label">Run status</div>
+      <div class="kpi-value">{% if run %}{{ run.status }}{% else %}draft{% endif %}</div>
+    </article>
+  </div>
+
+  <article class="card">
+    <div class="card-head">
+      <b>Payroll lines</b>
+      <span>deduction formula follows source app</span>
+    </div>
+    <div class="table">
+      <div class="table-head">
+        <div>Employee</div><div class="right">Base</div><div class="center">Days</div><div class="right">Deduction</div><div class="right">Net Pay</div>
+      </div>
+      {% for line in lines %}
+        <div class="table-row">
+          <div>
+            <strong>{{ line.line.employee.full_name }}</strong>
+            <div class="muted">{{ line.line.employee.division }}</div>
+          </div>
+          <div class="right tabular">Rp {{ line.line.base_salary }}</div>
+          <div class="center tabular">{{ line.line.days_worked }}</div>
+          <div class="right tabular">Rp {{ line.deduction }}</div>
+          <div class="right tabular"><strong>Rp {{ line.line.net_pay }}</strong></div>
+        </div>
+      {% empty %}
+        <div class="muted">Belum ada payroll run.</div>
+      {% endfor %}
+    </div>
+    <div class="muted table-foot">Total deductions: Rp {{ total_deduction }}</div>
+  </article>
+</section>
+{% endblock %}
